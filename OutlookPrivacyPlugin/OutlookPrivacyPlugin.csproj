@@ -242,6 +242,7 @@
     </EmbeddedResource>
     <None Include="App.config" />
     <None Include="oop.snk" />
+    <None Include="oop.snk.pfx" />
     <None Include="OutlookPrivacyPlugin_TemporaryKey.pfx" />
     <None Include="OutlookPrivacyPlugin_TemporaryKey.snk" />
     <None Include="packages.config" />
@@ -292,16 +293,16 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>OutlookPrivacyPlugin_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>oop.snk.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>C59300CE714F8A15418DA6E37CECE19CB5A50786</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>B80F1D350146023A28B3E3095B20FF1C8F990537</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>oop.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>oop.snk.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

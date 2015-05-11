@@ -10,7 +10,7 @@
     <ApplicationIcon />
     <AssemblyKeyContainerName />
     <AssemblyName>Org.BouncyCastle</AssemblyName>
-    <AssemblyOriginatorKeyFile>oop.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>oop.snk.pfx</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
@@ -3445,6 +3445,7 @@
     <Content Include="Readme.html" />
     <None Include="NBuild.build" />
     <None Include="oop.snk" />
+    <None Include="oop.snk.pfx" />
     <None Include="OutlookPrivacyPlugin_TemporaryKey.snk" />
     <None Include="testcfg.nunit" />
   </ItemGroup>
