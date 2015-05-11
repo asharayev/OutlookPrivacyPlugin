@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MimeKit;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Office = Microsoft.Office.Core;
 
@@ -10,7 +11,6 @@ using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using Exception = System.Exception;
-using anmar.SharpMimeTools;
 
 using Deja.Crypto.BcPgp;
 using NLog;
@@ -731,9 +731,8 @@ namespace OutlookPrivacyPlugin
 
 			// Extract files from MIME data
 
-
-			SharpMessage msg = new SharpMessage(cleartext);
-			string body = mailItem.Body;
+		    MimeMessage mimeMessage = MimeMessage.Load(new MemoryStream(this._encoding.GetBytes(cleartext)));
+			string body = mimeMessage.HtmlBody ?? mimeMessage.TextBody;
 
 			var DecryptAndVerifyHeaderMessage = "** ";
 
@@ -760,13 +759,13 @@ namespace OutlookPrivacyPlugin
 
 			if (mailItem.BodyFormat == Outlook.OlBodyFormat.olFormatPlain)
 			{
-				mailItem.Body = DecryptAndVerifyHeaderMessage + msg.Body;
+				mailItem.Body = DecryptAndVerifyHeaderMessage + body;
 			}
 			else if (mailItem.BodyFormat == Outlook.OlBodyFormat.olFormatHTML)
 			{
-				if (!msg.Body.TrimStart().ToLower().StartsWith("<html"))
+				if (!body.TrimStart().ToLower().StartsWith("<html"))
 				{
-					body = DecryptAndVerifyHeaderMessage + msg.Body;
+					body = DecryptAndVerifyHeaderMessage + body;
 					body = System.Net.WebUtility.HtmlEncode(body);
 					body = body.Replace("\n", "<br />");
 
@@ -776,18 +775,18 @@ namespace OutlookPrivacyPlugin
 				{
 					// Find <body> tag and insert our message.
 
-					var matches = Regex.Match(msg.Body, @"(<body[^<]*>)", RegexOptions.IgnoreCase);
+					var matches = Regex.Match(body, @"(<body[^<]*>)", RegexOptions.IgnoreCase);
 					if (matches.Success)
 					{
 						var bodyTag = matches.Groups[1].Value;
 
 						// Insert decryption message.
-						mailItem.HTMLBody = msg.Body.Replace(
+						mailItem.HTMLBody = body.Replace(
 							bodyTag,
 							bodyTag + DecryptAndVerifyHeaderMessage.Replace("\n", "<br />"));
 					}
 					else
-						mailItem.HTMLBody = msg.Body;
+						mailItem.HTMLBody = body;
 				}
 			}
 			else
@@ -795,18 +794,18 @@ namespace OutlookPrivacyPlugin
 				// May cause mail item not to open correctly
 
 				mailItem.BodyFormat = Outlook.OlBodyFormat.olFormatPlain;
-				mailItem.Body = msg.Body;
+				mailItem.Body = body;
 			}
 
-			foreach (SharpAttachment mimeAttachment in msg.Attachments)
+			foreach (MimePart mimeAttachment in mimeMessage.Attachments.Where(x => !string.IsNullOrEmpty(x.FileName))
+                                                .Union(mimeMessage.BodyParts.Where(x => !string.IsNullOrEmpty(x.FileName))))
 			{
-				mimeAttachment.Stream.Position = 0;
-				var fileName = mimeAttachment.Name;
+				var fileName = mimeAttachment.FileName;
 				var tempFile = Path.Combine(Path.GetTempPath(), fileName);
 
 				using (FileStream fout = File.OpenWrite(tempFile))
 				{
-					mimeAttachment.Stream.CopyTo(fout);
+					mimeAttachment.ContentObject.DecodeTo(fout);
 				}
 
 				mailItem.Attachments.Add(tempFile, Outlook.OlAttachmentType.olByValue, 1, fileName);
